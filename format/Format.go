@@ -8,20 +8,16 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func Format(str []byte)(name string){
+func Format(data []byte)(name string){
 	file,_ := os.Create("test.txt")
 	defer file.Close()
-	Println(string(str))
-	// Println(str)
-	// str = strings.Replace(str,"\n","",-1)
-	//Println(str+"\n\n")
-	dom,err := goquery.NewDocument(string(str))
-	//Println(string(str))
+	dom,err := goquery.NewDocument(string(data))
+	Println("================================")
 	if err != nil{
 		Print("Error :")
 		Println(err)
 	}else{
-	dom.Find("td").Siblings().Each(func(i int, s *goquery.Selection){
+	dom.Find("table").Siblings().Each(func(i int, s *goquery.Selection){
 		file.WriteString(s.Text())
 		Println(s.Text())
 	})}

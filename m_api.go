@@ -1,13 +1,26 @@
 package main
 
-import(
-	"fmt"
+import (
 	"go-api/login"
-	"io/ioutil"
-	//"github.com/gin-gonic/gin"
+	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
+type User struct {
+	Username string `form:"username"  binding:"required"`
+	Password string `form:"password"  binding:"required"`
+}
+
 func main() {
-	cookie,_ := ioutil.ReadFile("cookie.txt")
-	fmt.Println(login.Login(string(cookie)))
+	router := gin.Default()
+	router.POST("/login", getLogin)
+	router.Run(":8888")
+}
+
+func getLogin(c *gin.Context) {
+	var user User
+	c.Bind(&user)
+	cookie := login.Login(user.Username,user.Password)
+	c.Writer.Header().Add("cookies",cookie)
+	c.JSON(http.StatusOK, gin.H{"msg": "success",})
 }

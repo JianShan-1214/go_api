@@ -1,44 +1,26 @@
 package login
 
 import (
-	//"fmt"
-	"os"
-	"github.com/gocolly/colly"	
-	"go-api/format"
-	"io/ioutil"
-	"bytes"
-	"golang.org/x/text/encoding/traditionalchinese"
-	"golang.org/x/text/transform"
+	"fmt"
+	"github.com/gocolly/colly"
 )
 
-func Login(cookie string)(name string){
-	var data []byte
-	file,_ := os.Create("test.txt")
-	defer file.Close()
+func Login(username string, password string)(cookie string) {
+	var Login_url = "https://www.mcu.edu.tw/student/new-query/Chk_Pass_New_v1.asp"
+	var formData = map[string]string{
+		"t_tea_no": username,
+		"t_tea_pass": password,
+	}
 	c := colly.NewCollector()
-	c.OnRequest(func(r *colly.Request){
-		r.Headers.Set("Cookie",cookie)
+	err := c.Post(Login_url, formData)
+	if err != nil {
+		fmt.Println(err)
+	}
+	c.OnResponse(func(r *colly.Response){
+		s := r.Request.Headers.Get("Cookie")
+		// fmt.Println(s)
+		cookie = s;
 	})
-	c.OnResponse(func (r *colly.Response)  {
-		data = r.Body
-		//fmt.Println(string(r.Body))
-	})
-	// c.OnHTML("table[cellspacing]",func (e *colly.HTMLElement) {
-	// 	fmt.Println(e.ChildText("td"))
-	// 	name = e.Text
-	// })
-	c.Visit("https://www.mcu.edu.tw/student/new-query/default.asp")	
-	data,_ = DecodeBig5(data)
-	name = format.Format(data)
-	return
-}
-
-func DecodeBig5(s []byte) ([]byte, error) {
-    I := bytes.NewReader(s)
-    O := transform.NewReader(I, traditionalchinese.Big5.NewDecoder())
-    b, err := ioutil.ReadAll(O)
-    if err != nil {
-        return nil, err
-    }
-    return b, nil
+	c.Visit(Login_url)
+	return 
 }
